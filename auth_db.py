@@ -31,6 +31,7 @@ _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 
@@ -156,6 +157,14 @@ def get_user_by_id(user_id):
     with get_connection() as conn:
         row = conn.execute(
             "SELECT * FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    return _public_user(row) if row else None
+
+
+def get_user_by_email(email):
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM users WHERE email = ? COLLATE NOCASE", ((email or "").strip(),)
         ).fetchone()
     return _public_user(row) if row else None
 

@@ -7,3 +7,4 @@ venv/
 # Local secrets / data
 .env
 users.db
+uploads/

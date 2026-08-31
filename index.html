@@ -3,101 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ForMed — Sign In</title>
+  <title>ForMed</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="/script.js" defer></script>
+  <script src="/portal.js" defer></script>
 </head>
 <body>
-  <main class="card">
-    <header class="head">
-      <h1 class="brand">ForMed</h1>
-      <p class="tagline">Healthcare education, written by the people who teach it.</p>
-    </header>
 
-    <div class="tabs" role="tablist">
-      <button type="button" class="tab active" data-view="login">Log In</button>
-      <button type="button" class="tab" data-view="signup">Sign Up</button>
-    </div>
+  <!-- ============ AUTH ============ -->
+  <div id="auth-view">
+    <main class="card">
+      <header class="head">
+        <h1 class="brand">ForMed</h1>
+        <p class="tagline">Healthcare education, written by the people who teach it.</p>
+      </header>
 
-    <div id="message" class="message" role="status" hidden></div>
-
-    <!-- ---------- LOG IN ---------- -->
-    <form id="login-form" class="form" novalidate>
-      <fieldset class="roles">
-        <legend>I am logging in as</legend>
-        <label><input type="radio" name="login-role" value="student" checked /> <span>Student</span></label>
-        <label><input type="radio" name="login-role" value="author" /> <span>Author</span></label>
-        <label><input type="radio" name="login-role" value="admin" /> <span>Admin</span></label>
-      </fieldset>
-
-      <label class="field">
-        <span>Email</span>
-        <input type="email" name="email" autocomplete="email" required />
-      </label>
-
-      <label class="field">
-        <span>Password</span>
-        <input type="password" name="password" autocomplete="current-password" required />
-      </label>
-
-      <label class="field" id="login-code-field" hidden>
-        <span>Security code</span>
-        <input type="text" name="security_code" inputmode="numeric" autocomplete="off" />
-      </label>
-
-      <button type="submit" class="submit">Log In</button>
-    </form>
-
-    <!-- ---------- SIGN UP ---------- -->
-    <form id="signup-form" class="form" novalidate hidden>
-      <fieldset class="roles">
-        <legend>Create an account as</legend>
-        <label><input type="radio" name="signup-role" value="student" checked /> <span>Student</span></label>
-        <label><input type="radio" name="signup-role" value="author" /> <span>Author</span></label>
-        <label><input type="radio" name="signup-role" value="admin" /> <span>Admin</span></label>
-      </fieldset>
-
-      <div class="row">
-        <label class="field">
-          <span>First name</span>
-          <input type="text" name="first_name" autocomplete="given-name" required />
-        </label>
-        <label class="field">
-          <span>Last name</span>
-          <input type="text" name="last_name" autocomplete="family-name" required />
-        </label>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-view="login">Log In</button>
+        <button type="button" class="tab" data-view="signup">Sign Up</button>
       </div>
 
-      <label class="field">
-        <span>Email</span>
-        <input type="email" name="email" autocomplete="email" required />
-      </label>
+      <div id="message" class="message" role="status" hidden></div>
 
-      <label class="field">
-        <span>Phone number</span>
-        <input type="tel" name="phone" autocomplete="tel" required />
-      </label>
+      <!-- ---------- LOG IN ---------- -->
+      <form id="login-form" class="form" novalidate>
+        <fieldset class="roles">
+          <legend>I am logging in as</legend>
+          <label><input type="radio" name="login-role" value="student" checked /> <span>Student</span></label>
+          <label><input type="radio" name="login-role" value="author" /> <span>Author</span></label>
+          <label><input type="radio" name="login-role" value="admin" /> <span>Admin</span></label>
+        </fieldset>
 
-      <label class="field">
-        <span>Password</span>
-        <input type="password" name="password" autocomplete="new-password" minlength="8" required />
-        <small>At least 8 characters.</small>
-      </label>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
 
-      <label class="field" id="signup-code-field" hidden>
-        <span>Security code</span>
-        <input type="text" name="security_code" inputmode="numeric" autocomplete="off" />
-        <small id="signup-code-hint"></small>
-      </label>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
 
-      <button type="submit" class="submit">Create Account</button>
-    </form>
+        <label class="field" id="login-code-field" hidden>
+          <span>Security code</span>
+          <input type="text" name="security_code" inputmode="numeric" autocomplete="off" />
+        </label>
 
-    <!-- ---------- SIGNED IN ---------- -->
-    <div id="welcome" class="welcome" hidden>
-      <p id="welcome-text"></p>
-      <button type="button" id="logout" class="submit ghost">Log Out</button>
-    </div>
-  </main>
+        <button type="submit" class="submit">Log In</button>
+      </form>
+
+      <!-- ---------- SIGN UP ---------- -->
+      <form id="signup-form" class="form" novalidate hidden>
+        <fieldset class="roles">
+          <legend>Create an account as</legend>
+          <label><input type="radio" name="signup-role" value="student" checked /> <span>Student</span></label>
+          <label><input type="radio" name="signup-role" value="author" /> <span>Author</span></label>
+          <label><input type="radio" name="signup-role" value="admin" /> <span>Admin</span></label>
+        </fieldset>
+
+        <div class="row">
+          <label class="field">
+            <span>First name</span>
+            <input type="text" name="first_name" autocomplete="given-name" required />
+          </label>
+          <label class="field">
+            <span>Last name</span>
+            <input type="text" name="last_name" autocomplete="family-name" required />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+
+        <label class="field">
+          <span>Phone number</span>
+          <input type="tel" name="phone" autocomplete="tel" required />
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+          <small>At least 8 characters.</small>
+        </label>
+
+        <label class="field" id="signup-code-field" hidden>
+          <span>Security code</span>
+          <input type="text" name="security_code" inputmode="numeric" autocomplete="off" />
+          <small id="signup-code-hint"></small>
+        </label>
+
+        <button type="submit" class="submit">Create Account</button>
+      </form>
+    </main>
+  </div>
+
+  <!-- ============ PORTAL ============ -->
+  <div id="portal-view" hidden>
+    <header class="portal-header">
+      <span class="brand-sm">ForMed</span>
+      <div class="portal-id">
+        <span id="portal-who"></span>
+        <span id="portal-role" class="role-badge"></span>
+        <button type="button" id="portal-logout" class="btn-ghost">Log Out</button>
+      </div>
+    </header>
+    <nav class="portal-tabs" id="portal-tabs"></nav>
+    <main class="portal-main" id="portal-main"></main>
+  </div>
+
 </body>
 </html>

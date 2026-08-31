@@ -92,20 +92,19 @@ async function postJSON(url, body) {
   }
 }
 
-// --- Signed-in view -------------------------------------------------------
+// --- Auth <-> portal swap ------------------------------------------------
 
-function showWelcome(user) {
-  $(".tabs").hidden = true;
-  $("#login-form").hidden = true;
-  $("#signup-form").hidden = true;
-  $("#welcome").hidden = false;
-  $("#welcome-text").textContent =
-    `Signed in as ${user.first_name} ${user.last_name} — ${user.role}.`;
+function enterPortal(user) {
+  $("#auth-view").hidden = true;
+  $("#portal-view").hidden = false;
+  // portal.js owns everything past this point.
+  window.Portal.render(user);
 }
 
-function showAuthForms() {
-  $(".tabs").hidden = false;
-  $("#welcome").hidden = true;
+function exitPortal() {
+  if (window.Portal) window.Portal.teardown();
+  $("#portal-view").hidden = true;
+  $("#auth-view").hidden = false;
   switchView("login");
 }
 
@@ -124,7 +123,7 @@ async function handleLogin(e) {
     return;
   }
   form.reset();
-  showWelcome(data.user);
+  enterPortal(data.user);
 }
 
 async function handleSignup(e) {
@@ -147,7 +146,7 @@ async function handleSignup(e) {
 
 async function handleLogout() {
   await postJSON("/api/logout", {});
-  showAuthForms();
+  exitPortal();
   showMessage("You have been logged out.", "success");
 }
 
@@ -156,7 +155,7 @@ async function checkSession() {
     const res = await fetch("/api/me");
     if (!res.ok) return;
     const data = await res.json();
-    if (data.ok) showWelcome(data.user);
+    if (data.ok) enterPortal(data.user);
   } catch (_) {
     /* not logged in */
   }
@@ -178,7 +177,7 @@ function init() {
 
   $("#login-form").addEventListener("submit", handleLogin);
   $("#signup-form").addEventListener("submit", handleSignup);
-  $("#logout").addEventListener("click", handleLogout);
+  $("#portal-logout").addEventListener("click", handleLogout);
 
   syncCodeField("login");
   syncCodeField("signup");
