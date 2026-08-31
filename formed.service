@@ -1,13 +1,13 @@
 [Unit]
-Description=Gunicorn instance to serve appname
+Description=Gunicorn instance to serve ForMed
 After=network.target
 
 [Service]
-User=appname
+User=formed
 Group=www-data
-WorkingDirectory=/home/appname/www
-Environment=PATH=/home/appname/www/venv/bin SCRIPT_NAME=/appname
-ExecStart=/home/appname/www/venv/bin/gunicorn --workers 3 --bind unix:appname.sock -m 007 wsgi:app
+WorkingDirectory=/home/formed/www
+Environment=PATH=/home/formed/www/venv/bin SCRIPT_NAME=/formed
+ExecStart=/home/formed/www/venv/bin/gunicorn --workers 3 --bind unix:formed.sock -m 007 wsgi:app
 
 [Install]
 WantedBy=multi-user.target

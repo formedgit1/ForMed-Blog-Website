@@ -1,0 +1,200 @@
+:root {
+  --bg: #eef3f6;
+  --card: #ffffff;
+  --ink: #1b2a33;
+  --muted: #5b6b75;
+  --line: #d5dee3;
+  --brand: #0f8a8d;
+  --brand-dark: #0b6f72;
+  --danger: #b23c3c;
+  --success: #1f7a4d;
+  --focus: #0f8a8d;
+}
+
+* { box-sizing: border-box; }
+
+/* Class selectors like .form { display: flex } outrank the UA [hidden] rule,
+   so restate it with priority or hidden forms still show. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 12px 30px rgba(27, 42, 51, 0.08);
+}
+
+.head { text-align: center; margin-bottom: 20px; }
+
+.brand {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+  color: var(--brand);
+}
+
+.tagline {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 18px;
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(27, 42, 51, 0.12);
+}
+
+.form { display: flex; flex-direction: column; gap: 14px; }
+
+.row { display: flex; gap: 12px; }
+.row .field { flex: 1; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.field small { color: var(--muted); font-size: 12px; }
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  background: #fff;
+}
+
+input:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+  border-color: var(--focus);
+}
+
+.roles {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.roles legend {
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.roles label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.submit {
+  margin-top: 4px;
+  padding: 11px 0;
+  border: 0;
+  border-radius: 9px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit:hover { background: var(--brand-dark); }
+
+.submit.ghost {
+  background: transparent;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+
+.message {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.message.error {
+  background: #fbeaea;
+  color: var(--danger);
+  border: 1px solid #eecccc;
+}
+
+.message.success {
+  background: #e7f4ee;
+  color: var(--success);
+  border: 1px solid #c8e6d6;
+}
+
+.welcome { display: flex; flex-direction: column; gap: 14px; text-align: center; }
+.welcome p { margin: 0; font-size: 15px; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10171c;
+    --card: #172127;
+    --ink: #e8eef1;
+    --muted: #9fb0b9;
+    --line: #2b3940;
+    --brand: #2bb7ba;
+    --brand-dark: #23989b;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"] { background: #0f171c; color: var(--ink); }
+  .message.error { background: #35201f; border-color: #5a2f2d; }
+  .message.success { background: #16302c; border-color: #22503c; }
+}
