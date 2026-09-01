@@ -261,4 +261,5 @@ def too_large(_err):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    # Port 5000 is taken by AirPlay Receiver on macOS, so default to 8000.
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
