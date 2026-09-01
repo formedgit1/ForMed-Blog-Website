@@ -28,25 +28,86 @@ DEMO_USERS = [
 ]
 
 # (title, description, author email, career name, status)
+ALEX = "alex.author@demo.formed"
+SAM = "sam.author@demo.formed"
+
 DEMO_ARTICLES = [
+    # Therapeutic Services
     ("Demo: A Day in the Life of an ICU Nurse",
-     "First-hand look at a 12-hour critical-care shift.",
-     "alex.author@demo.formed", "Registered Nurse", "published"),
+     "A first-hand walk through a 12-hour critical-care shift, from handoff to charting.",
+     ALEX, "Registered Nurse", "published"),
+    ("Demo: So You Want to Be a Physical Therapist",
+     "Schooling, licensure, and the settings PTs actually work in.",
+     SAM, "Physical Therapist", "published"),
+    ("Demo: Inside the Hospital Pharmacy",
+     "How a pharmacist checks, compounds, and clears every order that reaches a patient.",
+     ALEX, "Pharmacist", "published"),
+    ("Demo: Respiratory Therapy During a Code",
+     "The RT's role when a patient stops breathing, minute by minute.",
+     SAM, "Respiratory Therapist", "published"),
+    ("Demo: What Athletic Trainers Do Before the Whistle",
+     "Injury prevention, taping, and sideline decision-making in school sports.",
+     ALEX, "Athletic Trainer", "published"),
+
+    # Diagnostic Services
     ("Demo: How MRI Machines See Inside You",
-     "The physics of magnetic resonance imaging, explained simply.",
-     "alex.author@demo.formed", "MRI Technologist", "published"),
+     "The physics of magnetic resonance imaging, explained without the math.",
+     ALEX, "MRI Technologist", "published"),
+    ("Demo: Reading the Room: Diagnostic Sonography",
+     "What a sonographer is looking for while the probe is moving.",
+     SAM, "Diagnostic Medical Sonographer", "published"),
+    ("Demo: The Phlebotomy Handbook",
+     "Order of draw, difficult sticks, and keeping patients calm.",
+     ALEX, "Phlebotomist", "published"),
+    ("Demo: A Shift in the Clinical Lab",
+     "From specimen login to a verified result on the chart.",
+     SAM, "Clinical Laboratory Scientist", "published"),
+
+    # Health Informatics
     ("Demo: Getting Started in Medical Coding",
-     "Certifications, tools, and what the daily work looks like.",
-     "sam.author@demo.formed", "Medical Coder", "published"),
+     "Certifications, code sets, and what the daily work really looks like.",
+     SAM, "Medical Coder", "published"),
+    ("Demo: The Nurse Informaticist Bridge",
+     "Translating between bedside nurses and the people who build the EHR.",
+     ALEX, "Nurse Informaticist", "published"),
+    ("Demo: Cleaning Data Nobody Wants to Clean",
+     "A clinical data analyst on messy inputs and trustworthy dashboards.",
+     SAM, "Clinical Data Analyst", "published"),
+
+    # Support Services
     ("Demo: The Sterile Processing Pipeline",
      "How instruments are cleaned, packed, and tracked between surgeries.",
-     "sam.author@demo.formed", "Central Sterile Processing Technician", "published"),
+     SAM, "Central Sterile Processing Technician", "published"),
+    ("Demo: Who Fixes the Ventilators?",
+     "Biomedical equipment technicians and the gear that can't fail.",
+     ALEX, "Biomedical Equipment Technician", "published"),
+    ("Demo: Logistics of a Hospital Supply Room",
+     "Par levels, expiry sweeps, and never running out of the one thing you need.",
+     SAM, "Materials Management Coordinator", "published"),
+
+    # Biotechnology Research & Development
+    ("Demo: Running a Clinical Trial Site",
+     "Consent, visit windows, and the binder that keeps a study auditable.",
+     ALEX, "Clinical Research Coordinator", "published"),
+    ("Demo: A Week at the Bench in Microbiology",
+     "Plating, identifying, and reporting organisms that change treatment.",
+     SAM, "Microbiologist", "published"),
+
+    # Public & Community Health
+    ("Demo: Health Education That People Actually Use",
+     "Designing a diabetes workshop for a real neighbourhood.",
+     ALEX, "Public Health Educator", "published"),
+    ("Demo: Tracing an Outbreak",
+     "How epidemiologists turn scattered case reports into a picture.",
+     SAM, "Epidemiologist", "published"),
+
+    # Pending -> land in the admin queue
     ("Demo: Careers in Genetic Counseling",
-     "Training path and what patients are counselled on.",
-     "alex.author@demo.formed", "Genetic Counselor", "pending"),
+     "Training path, day-to-day sessions, and what patients are counselled on.",
+     ALEX, "Genetic Counselor", "pending"),
     ("Demo: Community Health Workers on the Front Line",
-     "Bridging clinics and neighbourhoods.",
-     "sam.author@demo.formed", "Community Health Worker", "pending"),
+     "Bridging clinics and the neighbourhoods they serve.",
+     SAM, "Community Health Worker", "pending"),
 ]
 
 
@@ -88,7 +149,10 @@ def seed_articles():
                 print(f"  ! skipped {title!r} (missing author or career)")
                 continue
 
-            stored = f"demo_{made}_{title.split(':')[0].strip().lower()}.txt".replace(" ", "_")
+            slug = title.split(":", 1)[1].strip().lower().replace(" ", "-")
+            slug = "".join(ch for ch in slug if ch.isalnum() or ch == "-")
+            original = f"{slug}.txt"
+            stored = f"demo_{made}_{original}"
             with open(os.path.join(UPLOAD_DIR, stored), "w") as fh:
                 fh.write(f"{title}\n\n{desc}\n\n(placeholder demo file)\n")
 
@@ -101,8 +165,7 @@ def seed_articles():
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (title, desc, author["id"], career_id, stored,
-                 stored.replace("demo_", "").replace("_", " "),
-                 status, _now(), decided_at),
+                 original, status, _now(), decided_at),
             )
             made += 1
     print(f"articles: {made} created, {len(DEMO_ARTICLES) - made} already present")

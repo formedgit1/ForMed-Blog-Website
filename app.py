@@ -116,6 +116,31 @@ def api_careers():
     return jsonify({"ok": True, "career_paths": portal_db.list_careers()})
 
 
+# --- Library (any signed-in role) -----------------------------------
+
+@app.get("/api/library/facets")
+@require_role()
+def api_library_facets():
+    return jsonify({"ok": True, "career_paths": portal_db.library_facets()})
+
+
+@app.get("/api/library/articles")
+@require_role()
+def api_library_articles():
+    query = (request.args.get("q") or "").strip()
+    raw_paths = (request.args.get("paths") or "").strip()
+    path_ids = [int(x) for x in raw_paths.split(",") if x.strip().isdigit()]
+    student_id = g.user["id"] if g.user["role"] == "student" else None
+    return jsonify({
+        "ok": True,
+        "articles": portal_db.list_library_articles(
+            query=query or None,
+            path_ids=path_ids or None,
+            student_id=student_id,
+        ),
+    })
+
+
 # --- Student portal ---------------------------------------------------
 
 @app.get("/api/student/saved-articles")

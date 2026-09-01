@@ -102,7 +102,13 @@
   <!-- ============ PORTAL ============ -->
   <div id="portal-view" hidden>
     <header class="portal-header">
-      <span class="brand-sm">ForMed</span>
+      <div class="header-left">
+        <span class="brand-sm">ForMed</span>
+        <nav class="app-nav" id="app-nav">
+          <button type="button" class="app-link active" data-mode="portal">My Portal</button>
+          <button type="button" class="app-link" data-mode="library">Library</button>
+        </nav>
+      </div>
       <div class="portal-id">
         <span id="portal-who"></span>
         <span id="portal-role" class="role-badge"></span>

@@ -6,7 +6,12 @@ window.Portal = (function () {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-  const state = { user: null, careers: null };
+  const state = { user: null, careers: null, mode: "portal", activeTab: null };
+
+  // One stable colour per career path, by its position in the facet list.
+  const PATH_COLORS = ["#0f8a8d", "#b5652b", "#4a6fa5", "#6a8f3c", "#8a5aa8", "#c0473f"];
+
+  const library = { q: "", paths: new Set(), facets: [] };
 
   const TABS = {
     student: [
@@ -386,11 +391,149 @@ window.Portal = (function () {
     });
   }
 
+  // --- library ------------------------------------------------
+
+  function pathColor(pathId) {
+    const idx = library.facets.findIndex((f) => f.id === pathId);
+    return PATH_COLORS[(idx < 0 ? 0 : idx) % PATH_COLORS.length];
+  }
+
+  async function renderLibrary(main) {
+    main.innerHTML = `<section class="library">
+      <div class="library-hero">
+        <h1>The ForMed Library</h1>
+        <p>Every published article, shelved by career path.</p>
+        <div class="search">
+          <svg class="search-ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+          <input type="search" id="lib-search" autocomplete="off"
+                 placeholder="Search titles, descriptions, authors, careers…" />
+        </div>
+        <div class="chips" id="lib-chips"></div>
+      </div>
+      <div id="lib-results" class="shelf"></div>
+    </section>`;
+
+    const search = $("#lib-search", main);
+    search.value = library.q;
+    let debounce;
+    search.addEventListener("input", () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        library.q = search.value.trim();
+        loadLibraryResults();
+      }, 250);
+    });
+
+    if (!library.facets.length) {
+      const { data } = await api("/api/library/facets");
+      library.facets = data.career_paths || [];
+    }
+    renderChips(main);
+    loadLibraryResults();
+  }
+
+  function renderChips(main) {
+    const wrap = $("#lib-chips", main);
+    if (!wrap) return;
+    const allActive = library.paths.size === 0;
+    wrap.innerHTML =
+      `<button class="chip chip-all ${allActive ? "active" : ""}" data-path="all">All paths</button>` +
+      library.facets
+        .map((f) => {
+          const on = library.paths.has(f.id);
+          return `<button class="chip ${on ? "active" : ""}" data-path="${f.id}"
+            style="--chip:${pathColor(f.id)}">${esc(f.name)}<span class="chip-n">${f.count}</span></button>`;
+        })
+        .join("");
+
+    wrap.onclick = (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      if (btn.dataset.path === "all") {
+        library.paths.clear();
+      } else {
+        const id = Number(btn.dataset.path);
+        if (library.paths.has(id)) library.paths.delete(id);
+        else library.paths.add(id);
+      }
+      renderChips(main);
+      loadLibraryResults();
+    };
+  }
+
+  async function loadLibraryResults() {
+    const results = $("#lib-results");
+    if (!results) return;
+    results.innerHTML = '<p class="loading">Loading…</p>';
+
+    const params = new URLSearchParams();
+    if (library.q) params.set("q", library.q);
+    if (library.paths.size) params.set("paths", [...library.paths].join(","));
+
+    const { data } = await api("/api/library/articles?" + params.toString());
+    const articles = data.articles || [];
+
+    if (!articles.length) {
+      results.innerHTML = `<p class="empty">${
+        library.q || library.paths.size
+          ? "No articles match your search."
+          : "The library is empty. Approved article requests will appear here."
+      }</p>`;
+      return;
+    }
+
+    const isStudent = state.user.role === "student";
+    results.innerHTML = articles
+      .map((a) => `<article class="book" style="--spine:${pathColor(a.career_path_id)}">
+        <div class="book-spine"></div>
+        <div class="book-body">
+          <span class="book-path">${esc(a.career_path_name || "—")}</span>
+          <h3 class="book-title">${esc(a.title)}</h3>
+          <p class="book-career">${esc(a.career_name || "—")}</p>
+          <p class="book-desc">${esc(a.description)}</p>
+          <div class="book-foot">
+            <span>${esc(a.author_name)}</span>
+            <span>${fmtDate(a.decided_at || a.created_at)}</span>
+          </div>
+          ${isStudent ? `<button class="book-save ${a.saved ? "saved" : ""}" data-save="${a.id}">${a.saved ? "Saved ✓" : "Save"}</button>` : ""}
+        </div>
+      </article>`)
+      .join("");
+
+    if (isStudent) {
+      results.onclick = async (e) => {
+        const btn = e.target.closest("[data-save]");
+        if (!btn) return;
+        const id = Number(btn.dataset.save);
+        const wasSaved = btn.classList.contains("saved");
+        btn.disabled = true;
+        const { data: res } = wasSaved
+          ? await api(`/api/student/saved-articles/${id}`, { method: "DELETE" })
+          : await api("/api/student/saved-articles", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ article_id: id }),
+            });
+        btn.disabled = false;
+        if (!res.ok) {
+          flash(res.error || "Could not update your saved articles.", "error");
+          return;
+        }
+        btn.classList.toggle("saved", !wasSaved);
+        btn.textContent = !wasSaved ? "Saved ✓" : "Save";
+      };
+    }
+  }
+
   // --- shell ----------------------------------------------------
 
   function setActiveTab(tabId) {
     const tabs = TABS[state.user.role];
     const tab = tabs.find((t) => t.id === tabId) || tabs[0];
+    state.activeTab = tab.id;
     $$("#portal-tabs .ptab").forEach((b) =>
       b.classList.toggle("active", b.dataset.tab === tab.id));
 
@@ -400,6 +543,22 @@ window.Portal = (function () {
       console.error(err);
       main.innerHTML = '<p class="empty">Something went wrong loading this tab.</p>';
     });
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    $$("#app-nav .app-link").forEach((b) =>
+      b.classList.toggle("active", b.dataset.mode === mode));
+    $("#portal-tabs").hidden = mode !== "portal";
+
+    if (mode === "library") {
+      renderLibrary($("#portal-main")).catch((err) => {
+        console.error(err);
+        $("#portal-main").innerHTML = '<p class="empty">Could not load the library.</p>';
+      });
+    } else {
+      setActiveTab(state.activeTab || TABS[state.user.role][0].id);
+    }
   }
 
   function render(user) {
@@ -420,6 +579,12 @@ window.Portal = (function () {
       if (btn) setActiveTab(btn.dataset.tab);
     };
 
+    const nav = $("#app-nav");
+    nav.onclick = (e) => {
+      const btn = e.target.closest(".app-link");
+      if (btn) setMode(btn.dataset.mode);
+    };
+
     if (!$("#portal-flash")) {
       const f = document.createElement("div");
       f.id = "portal-flash";
@@ -428,7 +593,8 @@ window.Portal = (function () {
       $("#portal-main").before(f);
     }
 
-    setActiveTab(TABS[user.role][0].id);
+    state.activeTab = TABS[user.role][0].id;
+    setMode("portal");
   }
 
   function teardown() {
@@ -436,6 +602,11 @@ window.Portal = (function () {
     $("#portal-main").innerHTML = "";
     state.user = null;
     state.careers = null;
+    state.mode = "portal";
+    state.activeTab = null;
+    library.q = "";
+    library.paths.clear();
+    library.facets = [];
   }
 
   return { render, teardown };

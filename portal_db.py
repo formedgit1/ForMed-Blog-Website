@@ -344,6 +344,76 @@ def log_reading_event(student_id, article_id):
     return {"ok": True}
 
 
+# --- Library (all published articles) ------------------------------
+
+def library_facets():
+    """Career paths plus their published-article counts, for the filter row."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT p.id, p.name,
+                   COUNT(CASE WHEN a.status = 'published' THEN 1 END) AS count
+            FROM career_paths p
+            LEFT JOIN careers c ON c.career_path_id = p.id
+            LEFT JOIN articles a ON a.career_id = c.id
+            GROUP BY p.id, p.name
+            ORDER BY p.name
+            """
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def list_library_articles(query=None, path_ids=None, student_id=None):
+    """Published articles, newest first, optionally text-searched / path-filtered.
+
+    When ``student_id`` is given, each row carries a ``saved`` 0/1 flag.
+    """
+    params = []
+
+    if student_id is not None:
+        saved_select = ", (sa.article_id IS NOT NULL) AS saved"
+        saved_join = ("LEFT JOIN saved_articles sa "
+                      "ON sa.article_id = a.id AND sa.student_id = ?")
+        params.append(student_id)
+    else:
+        saved_select = ", 0 AS saved"
+        saved_join = ""
+
+    sql = f"""
+        SELECT a.id, a.title, a.description, a.created_at, a.decided_at,
+               (u.first_name || ' ' || u.last_name) AS author_name,
+               c.name AS career_name,
+               p.id   AS career_path_id,
+               p.name AS career_path_name
+               {saved_select}
+        FROM articles a
+        JOIN users u ON u.id = a.author_id
+        LEFT JOIN careers c      ON c.id = a.career_id
+        LEFT JOIN career_paths p ON p.id = c.career_path_id
+        {saved_join}
+        WHERE a.status = 'published'
+    """
+
+    if query:
+        like = f"%{query}%"
+        sql += """
+            AND (a.title LIKE ? OR a.description LIKE ?
+                 OR (u.first_name || ' ' || u.last_name) LIKE ?
+                 OR c.name LIKE ? OR p.name LIKE ?)
+        """
+        params += [like, like, like, like, like]
+
+    if path_ids:
+        sql += f" AND p.id IN ({','.join('?' for _ in path_ids)})"
+        params += list(path_ids)
+
+    sql += " ORDER BY COALESCE(a.decided_at, a.created_at) DESC, a.id DESC"
+
+    with get_connection() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [dict(r) for r in rows]
+
+
 def reading_activity(student_id, days=14):
     """Articles-read count per calendar day for the last ``days`` days.
 
