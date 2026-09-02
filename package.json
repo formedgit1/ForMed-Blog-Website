@@ -1,0 +1,20 @@
+{
+  "name": "formed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Front-end build pipeline for the ForMed Flask app: bundles src/ into hashed assets under static/dist and generates index.html.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs --prod",
+    "build:dev": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "clean": "node build.mjs --clean",
+    "start": "npm run build && python3 app.py"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  }
+}
